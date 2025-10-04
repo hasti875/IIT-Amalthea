@@ -59,13 +59,23 @@ const SubmitExpense: React.FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          ...data,
+          title: data.description,
+          description: data.notes || data.description,
+          amount: {
+            value: parseFloat(data.amount),
+            currency: { code: data.currency }
+          },
+          category: data.category.toLowerCase().replace(/[\s\/]+/g, '-'),
+          expenseDate: data.date,
+          vendor: data.vendor,
+          paidBy: 'employee',
           status: 'draft'
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
@@ -78,6 +88,7 @@ const SubmitExpense: React.FC = () => {
       }, 1500);
     } catch (error) {
       console.error('Error saving draft:', error);
+      alert(`Error saving draft: ${error.message}`);
     } finally {
       setIsDrafting(false);
     }
@@ -86,24 +97,51 @@ const SubmitExpense: React.FC = () => {
   const handleSubmitExpense = async (data: ExpenseFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:5000/api/expenses', {
+      // First create the expense as draft
+      const createResponse = await fetch('http://localhost:5000/api/expenses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          ...data,
-          status: 'pending'
+          title: data.description,
+          description: data.notes || data.description,
+          amount: {
+            value: parseFloat(data.amount),
+            currency: { code: data.currency }
+          },
+          category: data.category.toLowerCase().replace(/[\s\/]+/g, '-'),
+          expenseDate: data.date,
+          vendor: data.vendor,
+          paidBy: 'employee',
+          status: 'draft'
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json();
+        throw new Error(errorData.message || `HTTP error! status: ${createResponse.status}`);
       }
 
-      const result = await response.json();
-      console.log('Expense submitted successfully:', result);
+      const createResult = await createResponse.json();
+      const expenseId = createResult.data.expense._id;
+      
+      // Then submit the expense for approval
+      const submitResponse = await fetch(`http://localhost:5000/api/expenses/${expenseId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!submitResponse.ok) {
+        const errorData = await submitResponse.json();
+        throw new Error(errorData.message || `Submit error! status: ${submitResponse.status}`);
+      }
+
+      const submitResult = await submitResponse.json();
+      console.log('Expense submitted successfully:', submitResult);
       
       // Show success message
       setSubmitSuccess(true);
@@ -112,6 +150,7 @@ const SubmitExpense: React.FC = () => {
       }, 2000);
     } catch (error) {
       console.error('Error submitting expense:', error);
+      alert(`Error submitting expense: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }

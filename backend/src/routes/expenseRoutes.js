@@ -14,7 +14,7 @@ const {
   processApprovalAction,
   getExpenseStats
 } = require('../controllers/expenseController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, authorize } = require('../middleware/authMiddleware');
 const { upload, handleMulterError } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
@@ -28,6 +28,9 @@ router.route('/')
   .post(upload.single('receipt'), handleMulterError, createExpense);
 
 router.post('/process-receipt', upload.single('receipt'), handleMulterError, processReceiptOCR);
+router.get('/my-expenses', getMyExpenses);
+router.get('/all', authorize('admin', 'manager'), getAllExpenses);
+router.get('/stats', authorize('admin', 'manager'), getExpenseStats);
 router.get('/pending-approval', getPendingApprovals);
 router.get('/pending-approvals', getPendingApprovals);
 router.get('/approvals', getApprovalsEnhanced);

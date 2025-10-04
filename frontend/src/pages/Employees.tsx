@@ -105,7 +105,7 @@ const EmployeesManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setEmployees(data.data || []);
+        setEmployees(data.data.employees || []);
       } else {
         console.error('Failed to fetch employees');
       }
@@ -126,7 +126,7 @@ const EmployeesManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setManagers(data.data || []);
+        setManagers(data.data.managers || []);
       }
     } catch (error) {
       console.error('Error fetching managers:', error);
@@ -141,12 +141,24 @@ const EmployeesManagement = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify(inviteData),
+        body: JSON.stringify({
+          firstName: inviteData.firstName,
+          lastName: inviteData.lastName,
+          email: inviteData.email,
+          role: inviteData.role,
+          managerId: inviteData.managerId || undefined,
+          department: inviteData.department
+        }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setEmployees([...employees, data.data]);
+        // Add the new employee to the list with fullName
+        const newEmployee = {
+          ...data.data.user,
+          fullName: `${data.data.user.firstName} ${data.data.user.lastName}`
+        };
+        setEmployees([...employees, newEmployee]);
         setIsInviteDialogOpen(false);
         setInviteData({
           firstName: '',
@@ -156,13 +168,14 @@ const EmployeesManagement = () => {
           managerId: '',
           department: ''
         });
-        // Show success message
+        alert(`Employee invited successfully! Temporary password: ${data.data.temporaryPassword}`);
       } else {
         const errorData = await response.json();
+        alert(`Failed to invite employee: ${errorData.message}`);
         console.error('Failed to invite employee:', errorData);
-        // Show error message
       }
     } catch (error) {
+      alert('Error inviting employee. Please try again.');
       console.error('Error inviting employee:', error);
     }
   };
@@ -178,8 +191,10 @@ const EmployeesManagement = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
+          firstName: selectedEmployee.firstName,
+          lastName: selectedEmployee.lastName,
           role: selectedEmployee.role,
-          managerId: selectedEmployee.manager?._id,
+          managerId: selectedEmployee.manager?._id || null,
           department: selectedEmployee.department,
           isActive: selectedEmployee.isActive
         }),
@@ -187,19 +202,29 @@ const EmployeesManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        // Update the employee in the list with fullName
+        const updatedEmployee = {
+          ...data.data.user,
+          fullName: `${data.data.user.firstName} ${data.data.user.lastName}`
+        };
         setEmployees(employees.map(emp => 
-          emp._id === selectedEmployee._id ? data.data : emp
+          emp._id === selectedEmployee._id ? updatedEmployee : emp
         ));
         setIsEditDialogOpen(false);
         setSelectedEmployee(null);
+        alert('Employee updated successfully!');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to update employee: ${errorData.message}`);
       }
     } catch (error) {
+      alert('Error updating employee. Please try again.');
       console.error('Error updating employee:', error);
     }
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
-    if (!confirm('Are you sure you want to delete this employee?')) return;
+    if (!confirm('Are you sure you want to deactivate this employee?')) return;
 
     try {
       const response = await fetch(`http://localhost:5000/api/users/${employeeId}`, {
@@ -210,10 +235,20 @@ const EmployeesManagement = () => {
       });
 
       if (response.ok) {
-        setEmployees(employees.filter(emp => emp._id !== employeeId));
+        // Update the employee status to inactive instead of removing
+        setEmployees(employees.map(emp => 
+          emp._id === employeeId 
+            ? { ...emp, isActive: false }
+            : emp
+        ));
+        alert('Employee deactivated successfully!');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to deactivate employee: ${errorData.message}`);
       }
     } catch (error) {
-      console.error('Error deleting employee:', error);
+      alert('Error deactivating employee. Please try again.');
+      console.error('Error deactivating employee:', error);
     }
   };
 

@@ -37,14 +37,19 @@ const ReceiptUpload: React.FC<ReceiptUploadProps> = ({ onReceiptProcessed }) => 
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      return data.extractedData;
+      const result = await response.json();
+      if (result.status === 'success' && result.data && result.data.extractedData) {
+        return result.data.extractedData;
+      } else {
+        throw new Error('Invalid response format from OCR service');
+      }
     } catch (error) {
       console.error('OCR processing failed:', error);
-      throw new Error('Failed to process receipt with OCR');
+      throw new Error(error instanceof Error ? error.message : 'Failed to process receipt with OCR');
     }
   }, []);
 
@@ -95,23 +100,45 @@ const ReceiptUpload: React.FC<ReceiptUploadProps> = ({ onReceiptProcessed }) => 
       
       // Process with OCR
       setProgress(50);
-      const extractedData = await processWithOCR(file);
+      let extractedData;
+      
+      try {
+        extractedData = await processWithOCR(file);
+      } catch (ocrError) {
+        console.warn('OCR processing failed, using manual entry:', ocrError);
+        // Fallback to manual entry if OCR fails
+        extractedData = null;
+      }
       
       setProgress(80);
       
-      // Format the data
+      // Format the data with safe defaults
       const receiptData: ReceiptData = {
-        amount: extractedData.amount || '',
-        date: extractedData.date || new Date().toISOString().split('T')[0],
-        vendor: extractedData.vendor || '',
-        description: extractedData.description || '',
+        amount: extractedData?.amount ? (extractedData.amount.toString().replace(/[^0-9.]/g, '')) : '',
+        date: extractedData?.date || new Date().toISOString().split('T')[0],
+        vendor: extractedData?.vendor || '',
+        description: extractedData?.description || 'Receipt expense',
       };
 
       setProgress(100);
       onReceiptProcessed(receiptData);
 
+      // If OCR failed but we still processed the receipt, show a warning
+      if (!extractedData) {
+        setError('OCR processing failed, but receipt was uploaded. Please fill in details manually.');
+      }
+
     } catch (error) {
+      console.error('Receipt processing error:', error);
       setError(error instanceof Error ? error.message : 'Failed to process receipt');
+      
+      // Even if processing fails, allow manual entry
+      onReceiptProcessed({
+        amount: '',
+        date: new Date().toISOString().split('T')[0],
+        vendor: '',
+        description: 'Receipt expense - manual entry required'
+      });
     } finally {
       setProcessing(false);
     }
@@ -200,32 +227,47 @@ const ReceiptUpload: React.FC<ReceiptUploadProps> = ({ onReceiptProcessed }) => 
           </Alert>
         )}
 
-        {/* Action Button */}
+        {/* Action Buttons */}
         {file && !processing && (
-          <Button 
-            onClick={processReceipt}
-            className="w-full h-11 px-8"
-          >
-            <Camera className="h-4 w-4 mr-2" />
-            Process Receipt with OCR
-          </Button>
+          <div className="space-y-2">
+            <Button 
+              onClick={processReceipt}
+              className="w-full h-11 px-8"
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Process Receipt with OCR
+            </Button>
+            <Button 
+              className="w-full h-11 px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground" 
+              onClick={() => onReceiptProcessed({
+                amount: '',
+                date: new Date().toISOString().split('T')[0],
+                vendor: '',
+                description: 'Manual expense entry'
+              })}
+            >
+              Use This Receipt & Enter Details Manually
+            </Button>
+          </div>
         )}
 
-        {/* Manual Entry Option */}
-        <div className="text-center">
-          <p className="text-sm text-gray-500 mb-2">or</p>
-          <Button 
-            className="border border-input bg-background hover:bg-accent hover:text-accent-foreground" 
-            onClick={() => onReceiptProcessed({
-              amount: '',
-              date: new Date().toISOString().split('T')[0],
-              vendor: '',
-              description: ''
-            })}
-          >
-            Enter Details Manually
-          </Button>
-        </div>
+        {/* Manual Entry Option - Always Visible */}
+        {!processing && (
+          <div className="text-center pt-4 border-t">
+            <p className="text-sm text-gray-500 mb-2">or</p>
+            <Button 
+              className="w-full border border-input bg-background hover:bg-accent hover:text-accent-foreground" 
+              onClick={() => onReceiptProcessed({
+                amount: '',
+                date: new Date().toISOString().split('T')[0],
+                vendor: '',
+                description: ''
+              })}
+            >
+              Skip Receipt & Enter Details Manually
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

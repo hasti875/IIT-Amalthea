@@ -96,7 +96,7 @@ const Approvals = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setPendingExpenses(data);
+        setPendingExpenses(data.data?.expenses || []);
       } else {
         console.error('Failed to fetch pending approvals');
       }

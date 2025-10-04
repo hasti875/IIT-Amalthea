@@ -65,13 +65,20 @@ const expenseSchema = new mongoose.Schema({
       'accommodation',
       'transportation',
       'office-supplies',
-      'software',
-      'training',
+      'software-tools',
+      'training-education',
       'marketing',
       'entertainment',
       'healthcare',
       'other'
-    ]
+    ],
+    set: function(value) {
+      // Normalize category names to match enum
+      if (typeof value === 'string') {
+        return value.toLowerCase().replace(/[\s\/]+/g, '-');
+      }
+      return value;
+    }
   },
   subcategory: {
     type: String,

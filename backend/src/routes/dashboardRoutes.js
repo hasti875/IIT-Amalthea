@@ -1,8 +1,8 @@
 const express = require('express');
 const {
-  getEmployeeDashboard,
-  getManagerDashboard,
-  getAdminDashboard
+  getDashboardStats,
+  getPendingApprovals,
+  getTeamPerformance
 } = require('../controllers/dashboardController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -11,9 +11,19 @@ const router = express.Router();
 // All routes are protected
 router.use(protect);
 
-// Role-specific dashboard routes
-router.get('/employee', getEmployeeDashboard);
-router.get('/manager', authorize('manager', 'admin'), getManagerDashboard);
-router.get('/admin', authorize('admin'), getAdminDashboard);
+// @route   GET /api/dashboard/stats
+// @desc    Get comprehensive dashboard statistics
+// @access  Private
+router.get('/stats', getDashboardStats);
+
+// @route   GET /api/dashboard/pending-approvals
+// @desc    Get pending approvals for current user
+// @access  Private
+router.get('/pending-approvals', getPendingApprovals);
+
+// @route   GET /api/dashboard/team-performance
+// @desc    Get team performance metrics
+// @access  Private (Manager/Admin)
+router.get('/team-performance', authorize('manager', 'admin'), getTeamPerformance);
 
 module.exports = router;

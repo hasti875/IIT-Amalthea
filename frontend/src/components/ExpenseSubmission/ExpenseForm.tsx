@@ -94,7 +94,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
       });
       if (response.ok) {
         const data = await response.json();
-        setCurrencies(data);
+        setCurrencies(data.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch currencies:', error);
@@ -221,11 +221,13 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
-                {currencies.map((currency) => (
+                {Array.isArray(currencies) ? currencies.map((currency) => (
                   <SelectItem key={currency._id} value={currency.code}>
                     {currency.code} - {currency.name}
                   </SelectItem>
-                ))}
+                )) : (
+                  <SelectItem value="USD">USD - US Dollar</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>

@@ -13,6 +13,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const companyRoutes = require('./src/routes/companyRoutes');
 const expenseRoutes = require('./src/routes/expenseRoutes');
 const approvalRoutes = require('./src/routes/approvalRoutes');
+const approvalRuleRoutes = require('./src/routes/approvalRuleRoutes');
 const currencyRoutes = require('./src/routes/currencyRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 
@@ -73,6 +74,7 @@ app.use('/api/users', protect, userRoutes);
 app.use('/api/companies', protect, companyRoutes);
 app.use('/api/expenses', protect, expenseRoutes);
 app.use('/api/approvals', protect, approvalRoutes);
+app.use('/api/approval-rules', approvalRuleRoutes);
 app.use('/api/currencies', protect, currencyRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
