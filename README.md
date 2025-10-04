@@ -1,74 +1,161 @@
-# Expense Reimbursement Management System (MERN Stack)
+💸 Expense Reimbursement Management System (MERN Stack)
 
-A comprehensive expense reimbursement system that simplifies the process of expense submissions, approvals, and management for organizations.
+A comprehensive expense reimbursement platform that simplifies the process of expense submission, approval, and management for organizations.
+Built with a modern MERN + TypeScript stack, it provides a seamless experience for employees, managers, and admins.
 
-## 🚀 Features
+🚀 Problem Statement
 
-### 🔐 Authentication & User Management
-- **Company Auto-Creation**: New companies are automatically created during signup with selected country's base currency
-- **Role-Based Access**: Admin, Manager, and Employee roles with different permissions
-- **Manager Relationships**: Hierarchical manager-employee structure for approval workflows
+Managing expense reimbursements is often time-consuming, error-prone, and lacks transparency.
+Employees struggle with submissions, managers face approval bottlenecks, and finance teams deal with compliance overhead.
 
-**Use Lovable**
+✅ Our Solution
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/392f96cc-1321-412c-86cd-7dc24bcc2753) and start prompting.
+The Expense Reimbursement Management System automates the entire workflow:
 
-Changes made via Lovable will be committed automatically to this repo.
+Employees can submit expenses (with receipt uploads & OCR support).
 
-**Use your preferred IDE**
+Managers review & approve reimbursements with hierarchical workflows.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Companies gain real-time visibility into spending with analytics and reporting.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🔑 Features
+👥 User & Company Management
 
-Follow these steps:
+🔐 Authentication & Role-Based Access: Admin, Manager, and Employee roles.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+🏢 Company Auto-Creation: New companies created during signup with base currency.
+
+📊 Manager Relationships: Define reporting hierarchies for multi-level approvals.
+
+💵 Expense Management
+
+🧾 Submit Expenses with receipts (OCR-enabled for auto-data extraction).
+
+🔄 Approval Workflows: Multi-level, rule-based approvals.
+
+💱 Multi-Currency Support with automatic base-currency conversion.
+
+📂 Expense Tracking: View status (Pending, Approved, Reimbursed).
+
+📊 Analytics & Reporting
+
+📈 Dashboard with expense summaries per employee, department, or company.
+
+🗓️ Time-based filtering & reports (weekly, monthly, yearly).
+
+🔍 Search & filter by category, employee, or status.
+
+🔒 Security
+
+✅ JWT Authentication & bcrypt password hashing.
+
+✅ Helmet, rate limiting, and secure CORS policies.
+
+✅ Role-based authorization for endpoints.
+
+🖥️ Tech Stack
+
+Frontend
+
+⚡ Vite
+ + React
+ + TypeScript
+
+🎨 Tailwind CSS
+ + shadcn/ui
+
+Backend
+
+🟢 Node.js
+ + Express
+
+📦 REST API with modular controllers & services
+
+🔒 JWT authentication, role-based middleware
+
+Database
+
+🍃 MongoDB
+ + Mongoose
+
+Other
+
+☁️ File Uploads (ready for cloud storage e.g. AWS S3)
+
+🖼️ OCR Integration for receipt scanning
+
+📊 Seed scripts for currencies & initial setup
+
+📸 Screenshots (Add Images Here)
+
+Replace with actual screenshots/GIFs of your app for maximum impact.
+
+🏠 Dashboard Overview
+
+💵 Submit Expense Form
+
+✅ Approval Workflow Screen
+
+📊 Reports & Analytics
+
+⚙️ Getting Started
+🔹 Prerequisites
+
+Node.js (use nvm to manage versions)
+
+npm or yarn
+
+MongoDB (local or cloud, e.g. Atlas)
+
+🔹 Installation
+# Clone the repository
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Setup environment variables
+cp .env.example .env   # update values inside
+
+# Run development server
 npm run dev
-```
 
-**Edit a file directly in GitHub**
+🌐 Deployment
+With Lovable
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Open your Lovable project.
 
-**Use GitHub Codespaces**
+Go to Share → Publish.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Your app is instantly live.
 
-## What technologies are used for this project?
+Custom Domain
 
-This project is built with:
+Go to Project > Settings > Domains
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Click Connect Domain and follow instructions.
 
-## How can I deploy this project?
+📌 Roadmap
 
-Simply open [Lovable](https://lovable.dev/projects/392f96cc-1321-412c-86cd-7dc24bcc2753) and click on Share -> Publish.
+📲 Mobile-friendly PWA version
 
-## Can I connect a custom domain to my Lovable project?
+🔔 Email & push notifications for approvals
 
-Yes, you can!
+📑 PDF export of reports & receipts
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+💳 Integration with accounting/payroll systems
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+🤝 Contributing
+
+Contributions are welcome!
+
+Fork the repo
+
+Create a new branch (feature/my-feature)
+
+Submit a pull request
+
+📜 License
+
+MIT License © 2025 Expense Reimbursement Management System
