@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MERN Expense System - API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .pending { background: #fff3cd; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 MERN Expense System - API Test</h1>
+    
+    <div class="test pending" id="health-test">
+        <h3>1. Backend Health Check</h3>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result"></div>
+    </div>
+
+    <div class="test pending" id="currencies-test">
+        <h3>2. Currencies Endpoint</h3>
+        <button onclick="testCurrencies()">Test Currencies</button>
+        <div id="currencies-result"></div>
+    </div>
+
+    <div class="test pending" id="register-test">
+        <h3>3. User Registration</h3>
+        <button onclick="testRegistration()">Test Registration</button>
+        <div id="register-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            const testDiv = document.getElementById('health-test');
+            
+            try {
+                resultDiv.innerHTML = '<p>Testing...</p>';
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    testDiv.className = 'test success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✅ Success!</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    testDiv.className = 'test error';
+                    resultDiv.innerHTML = `<p><strong>❌ Failed:</strong> ${data.message}</p>`;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                resultDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        async function testCurrencies() {
+            const resultDiv = document.getElementById('currencies-result');
+            const testDiv = document.getElementById('currencies-test');
+            
+            try {
+                resultDiv.innerHTML = '<p>Testing...</p>';
+                const response = await fetch(`${API_BASE}/currencies`, {
+                    headers: {
+                        'Authorization': 'Bearer test-token' // This will fail but show the endpoint works
+                    }
+                });
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    testDiv.className = 'test success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✅ Endpoint Working!</strong> (Auth required as expected)</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    testDiv.className = 'test error';
+                    resultDiv.innerHTML = `<p><strong>❌ Unexpected response:</strong> ${data.message}</p>`;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                resultDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        async function testRegistration() {
+            const resultDiv = document.getElementById('register-result');
+            const testDiv = document.getElementById('register-test');
+            
+            try {
+                resultDiv.innerHTML = '<p>Testing...</p>';
+                
+                const testData = {
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: `test${Date.now()}@example.com`,
+                    password: 'password123',
+                    companyName: 'Test Company',
+                    country: 'United States',
+                    baseCurrency: 'USD'
+                };
+
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    testDiv.className = 'test success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✅ Registration Successful!</strong></p>
+                        <p>Company: ${data.data.user.company.name}</p>
+                        <p>User: ${data.data.user.fullName} (${data.data.user.role})</p>
+                        <p>Currency: ${data.data.user.company.baseCurrency.code}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    testDiv.className = 'test error';
+                    resultDiv.innerHTML = `<p><strong>❌ Registration Failed:</strong> ${data.message}</p>`;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                resultDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        // Auto-run health check on page load
+        window.onload = () => {
+            testHealth();
+        };
+    </script>
+</body>
+</html>
