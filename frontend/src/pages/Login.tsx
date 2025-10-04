@@ -15,10 +15,15 @@ const Login = () => {
   const { signIn, signUp, user, role } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  
+  // Password change form state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   
   // Signup form state
   const [signupEmail, setSignupEmail] = useState("");
@@ -39,14 +44,23 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    const { error } = await signIn(loginEmail, loginPassword);
+    const { error, requirePasswordChange } = await signIn(loginEmail, loginPassword);
     
     if (error) {
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: error,
         variant: "destructive",
       });
+      setIsLoading(false);
+    } else if (requirePasswordChange) {
+      toast({
+        title: "Password Change Required",
+        description: "You must change your temporary password before continuing.",
+        variant: "default",
+      });
+      // Navigate to change password page or show inline form
+      setShowPasswordChange(true);
       setIsLoading(false);
     } else {
       toast({
@@ -108,6 +122,82 @@ const Login = () => {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in both password fields",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Validation Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/auth/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          currentPassword: loginPassword,
+          newPassword: newPassword
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Password changed successfully!",
+        });
+        setShowPasswordChange(false);
+        // Navigate to dashboard
+        navigate("/");
+      } else {
+        toast({
+          title: "Password Change Failed",
+          description: data.message || "Failed to change password",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Network error. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsLoading(false);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-primary p-4">
       <div className="w-full max-w-md">
@@ -121,10 +211,44 @@ const Login = () => {
 
         <Card className="shadow-elevated">
           <CardHeader>
-            <CardTitle>Welcome to ExpenseFlow</CardTitle>
-            <CardDescription>Sign in to your account or create your company</CardDescription>
+            <CardTitle>{showPasswordChange ? "Change Password" : "Welcome to ExpenseFlow"}</CardTitle>
+            <CardDescription>
+              {showPasswordChange 
+                ? "Please change your temporary password to continue" 
+                : "Sign in to your account or create your company"
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            {showPasswordChange ? (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input 
+                    id="newPassword" 
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input 
+                    id="confirmPassword" 
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Changing..." : "Change Password"}
+                </Button>
+              </form>
+            ) : (
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
@@ -261,6 +385,7 @@ const Login = () => {
                 </form>
               </TabsContent>
             </Tabs>
+            )}
           </CardContent>
         </Card>
       </div>

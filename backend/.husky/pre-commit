@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged for the backend
+cd backend && npx lint-staged
+
+echo "✅ Backend checks passed!"
+
+# Run checks for frontend if it exists
+if [ -d "frontend" ]; then
+  echo "🔍 Checking frontend..."
+  cd ../frontend && npm run lint && npm run format:check
+  echo "✅ Frontend checks passed!"
+fi
+
+echo "🎉 All pre-commit checks passed!"

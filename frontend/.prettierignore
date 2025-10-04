@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.local
+.env.production
+*.log
+package-lock.json
+*.min.js
+*.min.css
+public/

@@ -1,0 +1,324 @@
+{
+  "users": {
+    "employee": {
+      "_id": "fixture_employee_id",
+      "name": "John Employee",
+      "email": "john.employee@company.com",
+      "department": "Engineering",
+      "role": "employee",
+      "isActive": true,
+      "permissions": ["expense_submit", "expense_view_own"]
+    },
+    "manager": {
+      "_id": "fixture_manager_id", 
+      "name": "Jane Manager",
+      "email": "jane.manager@company.com",
+      "department": "Engineering",
+      "role": "manager",
+      "isActive": true,
+      "permissions": ["expense_submit", "expense_view_own", "expense_approve", "expense_view_team"]
+    },
+    "director": {
+      "_id": "fixture_director_id",
+      "name": "Bob Director", 
+      "email": "bob.director@company.com",
+      "department": "Engineering",
+      "role": "director",
+      "isActive": true,
+      "permissions": ["expense_submit", "expense_view_own", "expense_approve", "expense_view_department", "expense_override"]
+    },
+    "ceo": {
+      "_id": "fixture_ceo_id",
+      "name": "Alice CEO",
+      "email": "alice.ceo@company.com", 
+      "role": "ceo",
+      "isActive": true,
+      "permissions": ["expense_submit", "expense_view_own", "expense_approve", "expense_view_all", "expense_override", "approval_rule_manage"]
+    },
+    "deactivated": {
+      "_id": "fixture_deactivated_id",
+      "name": "Former Employee",
+      "email": "former@company.com",
+      "department": "Sales",
+      "role": "employee", 
+      "isActive": false,
+      "deactivatedAt": "2024-01-01T00:00:00Z"
+    }
+  },
+
+  "expenses": {
+    "pending_low": {
+      "_id": "fixture_expense_pending_low",
+      "amount": 25.50,
+      "currency": "USD",
+      "category": "Meals",
+      "description": "Team lunch at local restaurant",
+      "status": "pending",
+      "submittedBy": "fixture_employee_id",
+      "submittedAt": "2024-01-15T10:30:00Z",
+      "approvals": [],
+      "receiptUrl": "/uploads/receipt_1.jpg"
+    },
+    "pending_high": {
+      "_id": "fixture_expense_pending_high",
+      "amount": 850.00,
+      "currency": "USD", 
+      "category": "Travel",
+      "description": "Flight to client meeting in New York",
+      "status": "pending",
+      "submittedBy": "fixture_employee_id",
+      "submittedAt": "2024-01-14T14:20:00Z",
+      "approvals": [],
+      "receiptUrl": "/uploads/receipt_2.jpg"
+    },
+    "approved": {
+      "_id": "fixture_expense_approved",
+      "amount": 45.75,
+      "currency": "USD",
+      "category": "Office Supplies", 
+      "description": "Ergonomic mouse pad and wrist rest",
+      "status": "approved",
+      "submittedBy": "fixture_employee_id",
+      "submittedAt": "2024-01-10T09:15:00Z",
+      "approvals": [
+        {
+          "approver": "fixture_manager_id",
+          "decision": "approved", 
+          "timestamp": "2024-01-11T11:30:00Z",
+          "comments": "Approved for ergonomic health"
+        }
+      ],
+      "approvedAt": "2024-01-11T11:30:00Z",
+      "receiptUrl": "/uploads/receipt_3.jpg"
+    },
+    "rejected": {
+      "_id": "fixture_expense_rejected",
+      "amount": 150.00,
+      "currency": "USD",
+      "category": "Entertainment",
+      "description": "Company party expenses", 
+      "status": "rejected",
+      "submittedBy": "fixture_employee_id",
+      "submittedAt": "2024-01-08T16:45:00Z",
+      "approvals": [
+        {
+          "approver": "fixture_manager_id",
+          "decision": "rejected",
+          "timestamp": "2024-01-09T08:20:00Z",
+          "comments": "Entertainment expenses require pre-approval"
+        }
+      ],
+      "rejectedAt": "2024-01-09T08:20:00Z",
+      "rejectedBy": "fixture_manager_id",
+      "rejectionReason": "Entertainment expenses require pre-approval"
+    },
+    "multi_approval_partial": {
+      "_id": "fixture_expense_multi_partial",
+      "amount": 1250.00,
+      "currency": "USD",
+      "category": "Equipment",
+      "description": "New laptop for development work",
+      "status": "pending", 
+      "submittedBy": "fixture_employee_id",
+      "submittedAt": "2024-01-12T13:00:00Z",
+      "approvals": [
+        {
+          "approver": "fixture_manager_id",
+          "decision": "approved",
+          "timestamp": "2024-01-13T10:15:00Z", 
+          "comments": "Approved by direct manager"
+        }
+      ],
+      "receiptUrl": "/uploads/receipt_4.jpg"
+    },
+    "overdue": {
+      "_id": "fixture_expense_overdue",
+      "amount": 75.25,
+      "currency": "USD",
+      "category": "Transportation", 
+      "description": "Taxi to airport for business trip",
+      "status": "pending",
+      "submittedBy": "fixture_employee_id",
+      "submittedAt": "2024-01-01T07:30:00Z",
+      "approvals": [],
+      "receiptUrl": "/uploads/receipt_5.jpg"
+    }
+  },
+
+  "approvalRules": {
+    "engineering_low": {
+      "_id": "fixture_rule_eng_low",
+      "department": "Engineering",
+      "category": "*",
+      "minAmount": 0,
+      "maxAmount": 100,
+      "requiredApprovalCount": 1,
+      "requiredApprovers": ["fixture_manager_id"],
+      "isActive": true,
+      "priority": 1,
+      "autoApprovalDeadline": 7
+    },
+    "engineering_medium": {
+      "_id": "fixture_rule_eng_medium", 
+      "department": "Engineering",
+      "category": "*",
+      "minAmount": 100,
+      "maxAmount": 500,
+      "requiredApprovalCount": 1,
+      "requiredApprovers": ["fixture_manager_id"],
+      "isActive": true,
+      "priority": 2
+    },
+    "engineering_high": {
+      "_id": "fixture_rule_eng_high",
+      "department": "Engineering", 
+      "category": "*",
+      "minAmount": 500,
+      "maxAmount": 2000,
+      "requiredApprovalCount": 2,
+      "requiredApprovers": ["fixture_manager_id", "fixture_director_id"],
+      "isActive": true,
+      "priority": 3
+    },
+    "travel_specific": {
+      "_id": "fixture_rule_travel",
+      "department": "*",
+      "category": "Travel",
+      "minAmount": 200,
+      "maxAmount": 5000, 
+      "requiredApprovalCount": 2,
+      "requiredApprovers": ["fixture_manager_id", "fixture_director_id"],
+      "isActive": true,
+      "priority": 5,
+      "businessHoursOnly": true
+    },
+    "disabled_rule": {
+      "_id": "fixture_rule_disabled",
+      "department": "Sales",
+      "category": "*", 
+      "minAmount": 0,
+      "maxAmount": 1000,
+      "requiredApprovalCount": 1,
+      "requiredApprovers": ["fixture_manager_id"],
+      "isActive": false,
+      "priority": 1
+    }
+  },
+
+  "currencies": {
+    "usd_eur": {
+      "_id": "fixture_currency_usd_eur",
+      "fromCurrency": "USD",
+      "toCurrency": "EUR", 
+      "rate": 0.85,
+      "source": "exchangerate-api.com",
+      "lastUpdated": "2024-01-15T12:00:00Z"
+    },
+    "usd_gbp": {
+      "_id": "fixture_currency_usd_gbp",
+      "fromCurrency": "USD",
+      "toCurrency": "GBP",
+      "rate": 0.79,
+      "source": "fixer.io",
+      "lastUpdated": "2024-01-15T12:00:00Z" 
+    },
+    "stale_rate": {
+      "_id": "fixture_currency_stale",
+      "fromCurrency": "USD", 
+      "toCurrency": "CAD",
+      "rate": 1.25,
+      "source": "cached_rate",
+      "lastUpdated": "2024-01-10T12:00:00Z"
+    }
+  },
+
+  "companies": {
+    "default": {
+      "_id": "fixture_company_default",
+      "name": "Amalthea Corp",
+      "address": "123 Business St, Tech City, TC 12345",
+      "taxId": "12-3456789",
+      "currency": "USD",
+      "fiscalYearStart": "01-01",
+      "expenseCategories": [
+        "Travel",
+        "Meals", 
+        "Office Supplies",
+        "Equipment",
+        "Transportation",
+        "Entertainment",
+        "Training",
+        "Software"
+      ],
+      "approvalWorkflowEnabled": true,
+      "settings": {
+        "maxExpenseAmount": 10000,
+        "receiptRequired": true,
+        "autoApprovalEnabled": true,
+        "multiCurrencyEnabled": true
+      }
+    }
+  },
+
+  "ocrResults": {
+    "success_receipt": {
+      "success": true,
+      "extractedText": "Starbucks Coffee\\nDate: 01/15/2024\\nLatte Grande $4.75\\nTax $0.38\\nTotal: $5.13\\nThank you!",
+      "extractedAmount": 5.13,
+      "extractedDate": "2024-01-15",
+      "extractedVendor": "Starbucks Coffee",
+      "confidence": 89,
+      "processingTime": 1250,
+      "fallbackUsed": false
+    },
+    "low_confidence": {
+      "success": true,
+      "extractedText": "blurry text... $45.67 ... date unclear", 
+      "extractedAmount": 45.67,
+      "extractedDate": null,
+      "extractedVendor": null,
+      "confidence": 42,
+      "processingTime": 2100,
+      "fallbackUsed": true,
+      "suggestions": [
+        "Try uploading a clearer image",
+        "Ensure receipt is well-lit and flat"
+      ]
+    },
+    "failure_fallback": {
+      "success": false,
+      "extractedText": "",
+      "extractedAmount": null,
+      "extractedDate": null, 
+      "extractedVendor": null,
+      "confidence": 0,
+      "processingTime": 500,
+      "fallbackUsed": true,
+      "error": "OCR processing failed - image too blurry",
+      "suggestions": [
+        "Try uploading a clearer image",
+        "Consider manually entering the expense details"
+      ]
+    }
+  },
+
+  "apiResponses": {
+    "exchangeRate_success": {
+      "success": true,
+      "base": "USD",
+      "date": "2024-01-15",
+      "conversion_rates": {
+        "EUR": 0.85,
+        "GBP": 0.79, 
+        "JPY": 110.25,
+        "CAD": 1.25,
+        "AUD": 1.35
+      }
+    },
+    "exchangeRate_error": {
+      "error-type": "invalid-key",
+      "result": "error"
+    },
+    "exchangeRate_timeout": null
+  }
+}

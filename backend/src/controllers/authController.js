@@ -2,10 +2,24 @@ const User = require('../models/User');
 const Company = require('../models/Company');
 const { generateToken } = require('../middleware/authMiddleware');
 const { Currency } = require('../models/Currency');
+const UserService = require('../services/userService');
 
-// @desc    Register user & create company
-// @route   POST /api/auth/register
-// @access  Public
+/**
+ * @desc    Register new user and create company
+ * @route   POST /api/auth/register
+ * @access  Public
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.firstName - User's first name
+ * @param {string} req.body.lastName - User's last name
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - User's password
+ * @param {string} req.body.companyName - Company name
+ * @param {string} req.body.country - Company country
+ * @param {string} req.body.baseCurrency - Company base currency code
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with user data and token
+ */
 const registerUser = async (req, res) => {
   try {
     const {
@@ -101,9 +115,17 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Authenticate user & get token
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * @desc    Authenticate user and get token
+ * @route   POST /api/auth/login
+ * @access  Public
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - User's password
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with user data and token, or requirePasswordChange flag for temporary passwords
+ */
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -130,6 +152,30 @@ const loginUser = async (req, res) => {
       return res.status(401).json({
         status: 'error',
         message: 'Account is deactivated. Please contact your administrator.'
+      });
+    }
+
+    // Check if user must change password (temporary password)
+    if (user.mustChangePassword) {
+      // Generate token but flag that password change is required
+      const token = generateToken(user._id);
+      
+      return res.status(200).json({
+        status: 'success',
+        message: 'Login successful but password change required',
+        data: {
+          user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            mustChangePassword: true
+          },
+          token,
+          requirePasswordChange: true
+        }
       });
     }
 
@@ -180,9 +226,15 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get current logged in user
-// @route   GET /api/auth/me
-// @access  Private
+/**
+ * @desc    Get current logged in user
+ * @route   GET /api/auth/me
+ * @access  Private
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object from middleware
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with current user data
+ */
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate('company').populate('manager', 'firstName lastName email');
@@ -226,9 +278,16 @@ const getMe = async (req, res) => {
   }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
+/**
+ * @desc    Update user profile information
+ * @route   PUT /api/auth/profile
+ * @access  Private
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user object from middleware
+ * @param {Object} req.body - Profile update data
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated user data
+ */
 const updateProfile = async (req, res) => {
   try {
     const {
@@ -290,34 +349,33 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Change password
-// @route   PUT /api/auth/change-password
-// @access  Private
+/**
+ * @desc    Change user password
+ * @route   PUT /api/auth/change-password
+ * @access  Private
+ */
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
+    // Validate password change data
+    const validation = UserService.validatePasswordChange(currentPassword, newPassword);
+    if (!validation.success) {
       return res.status(400).json({
         status: 'error',
-        message: 'Please provide current and new password'
+        message: validation.message
       });
     }
 
-    // Get user with password
-    const user = await User.findById(req.user.id).select('+password');
-
-    // Check current password
-    if (!(await user.matchPassword(currentPassword))) {
+    // Change password using service layer
+    const result = await UserService.changePassword(req.user.id, currentPassword, newPassword);
+    
+    if (!result.success) {
       return res.status(400).json({
         status: 'error',
-        message: 'Current password is incorrect'
+        message: result.message
       });
     }
-
-    // Update password
-    user.password = newPassword;
-    await user.save();
 
     res.status(200).json({
       status: 'success',

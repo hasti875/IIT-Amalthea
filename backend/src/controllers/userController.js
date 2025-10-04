@@ -2,25 +2,29 @@ const User = require('../models/User');
 const Company = require('../models/Company');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const UserService = require('../services/userService');
 
-// @desc    Invite new employee
-// @route   POST /api/users/invite
-// @access  Private (Admin)
+/**
+ * @desc    Invite new employee to the company
+ * @route   POST /api/users/invite  
+ * @access  Private (Admin)
+ */
 const inviteEmployee = async (req, res) => {
   try {
     const { firstName, lastName, email, role, department, managerId } = req.body;
 
-    // Validate required fields
-    if (!firstName || !lastName || !email || !role) {
+    // Validate invitation data
+    const validation = UserService.validateInvitationData({ firstName, lastName, email, role });
+    if (!validation.success) {
       return res.status(400).json({
         status: 'error',
-        message: 'First name, last name, email, and role are required'
+        message: validation.message
       });
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const userExists = await UserService.checkUserExists(email);
+    if (userExists) {
       return res.status(400).json({
         status: 'error',
         message: 'User with this email already exists'
@@ -28,53 +32,37 @@ const inviteEmployee = async (req, res) => {
     }
 
     // Validate manager if provided
-    let manager = null;
-    if (managerId) {
-      manager = await User.findOne({
-        _id: managerId,
-        company: req.user.company._id,
-        role: { $in: ['manager', 'admin'] }
+    const managerValidation = await UserService.validateManager(managerId, req.user.company._id);
+    if (!managerValidation.success) {
+      return res.status(400).json({
+        status: 'error',
+        message: managerValidation.message
       });
-      
-      if (!manager) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Invalid manager specified'
-        });
-      }
     }
 
     // Generate temporary password
-    const tempPassword = crypto.randomBytes(8).toString('hex');
-    const hashedPassword = await bcrypt.hash(tempPassword, 12);
-
+    const tempPassword = UserService.generateTemporaryPassword(8);
+    
     // Create new user
-    const newUser = new User({
+    const userData = {
       firstName,
       lastName,
       email,
-      password: hashedPassword,
       role,
       department,
-      manager: managerId || null,
-      company: req.user.company._id,
-      isActive: true,
-      mustChangePassword: true,
-      invitedBy: req.user.id,
-      invitedAt: new Date()
-    });
-
-    await newUser.save();
+      managerId,
+      companyId: req.user.company._id,
+      invitedBy: req.user.id
+    };
+    
+    const newUser = await UserService.createUser(userData, tempPassword);
 
     // TODO: Send invitation email with temporary password
     // For now, we'll return the temp password in response
     console.log(`Temporary password for ${email}: ${tempPassword}`);
 
-    // Populate the response
-    const populatedUser = await User.findById(newUser._id)
-      .populate('manager', 'firstName lastName email')
-      .populate('company', 'name')
-      .select('-password');
+    // Get populated user data for response
+    const populatedUser = await UserService.getPopulatedUser(newUser._id);
 
     res.status(201).json({
       status: 'success',
@@ -93,47 +81,24 @@ const inviteEmployee = async (req, res) => {
   }
 };
 
-// @desc    Get all employees with filtering
-// @route   GET /api/users/employees
-// @access  Private (Admin/Manager)
+/**
+ * @desc    Get all employees with filtering and pagination
+ * @route   GET /api/users/employees
+ * @access  Private (Admin/Manager)
+ */
 const getEmployees = async (req, res) => {
   try {
     const { role, department, status, page = 1, limit = 10, search } = req.query;
     
-    const query = { company: req.user.company._id };
+    // Build query using service layer
+    const filters = { role, department, status, search };
+    const query = UserService.buildEmployeeQuery(filters, req.user.company._id);
     
-    // Build search query
-    if (role && role !== 'all') {
-      query.role = role;
-    }
+    // Get paginated employees
+    const result = await UserService.getPaginatedEmployees(query, page, limit);
     
-    if (department && department !== 'all') {
-      query.department = department;
-    }
-    
-    if (status && status !== 'all') {
-      query.isActive = status === 'active';
-    }
-    
-    if (search) {
-      query.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    const employees = await User.find(query)
-      .populate('manager', 'firstName lastName email')
-      .select('-password')
-      .sort({ firstName: 1, lastName: 1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await User.countDocuments(query);
-
-    // Add fullName virtual field
-    const employeesWithFullName = employees.map(emp => ({
+    // Add fullName virtual field to employees
+    const employeesWithFullName = result.employees.map(emp => ({
       ...emp.toObject(),
       fullName: `${emp.firstName} ${emp.lastName}`
     }));
@@ -143,10 +108,10 @@ const getEmployees = async (req, res) => {
       data: {
         employees: employeesWithFullName,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit)
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          pages: result.totalPages
         }
       }
     });

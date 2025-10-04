@@ -43,7 +43,7 @@ interface AuthContextType {
   role: UserRole | null;
   loading: boolean;
   signUp: (userData: SignUpData) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any; requirePasswordChange?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -149,11 +149,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Login response:', { status: response.status, data });
 
       if (response.ok) {
-        const { user: loggedInUser, token: newToken } = data.data;
+        const { user: loggedInUser, token: newToken, requirePasswordChange } = data.data;
         setUser(loggedInUser);
         setToken(newToken);
         setRole(loggedInUser.role);
         localStorage.setItem('token', newToken);
+        
+        // Handle temporary password scenario
+        if (requirePasswordChange || loggedInUser.mustChangePassword) {
+          return { error: null, requirePasswordChange: true };
+        }
+        
         return { error: null };
       } else {
         return { error: data.message || 'Login failed' };

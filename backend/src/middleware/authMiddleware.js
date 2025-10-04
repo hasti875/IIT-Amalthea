@@ -1,7 +1,13 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect routes
+/**
+ * @desc    Middleware to protect routes and authenticate users
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object  
+ * @param {Function} next - Express next middleware function
+ * @returns {void} Calls next() if authenticated, returns error response if not
+ */
 const protect = async (req, res, next) => {
   let token;
 
@@ -48,7 +54,11 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Grant access to specific roles
+/**
+ * @desc    Middleware to authorize specific user roles
+ * @param {...string} roles - Array of allowed roles
+ * @returns {Function} Express middleware function
+ */
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -61,7 +71,13 @@ const authorize = (...roles) => {
   };
 };
 
-// Check if user belongs to the same company
+/**
+ * @desc    Middleware to check if user belongs to the same company for data access
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {void} Calls next() if authorized, returns error response if not
+ */
 const checkCompanyAccess = (req, res, next) => {
   // Skip for admin users
   if (req.user.role === 'admin') {
@@ -81,7 +97,11 @@ const checkCompanyAccess = (req, res, next) => {
   next();
 };
 
-// Generate JWT Token
+/**
+ * @desc    Generate JWT token for user authentication
+ * @param {string} id - User ID to encode in the token
+ * @returns {string} JWT token string
+ */
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '30d',

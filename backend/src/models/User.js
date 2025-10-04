@@ -68,6 +68,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  mustChangePassword: {
+    type: Boolean,
+    default: false
+  },
+  invitedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  invitedAt: {
+    type: Date,
+    default: null
+  },
   lastLogin: {
     type: Date,
     default: null
