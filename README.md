@@ -1,161 +1,101 @@
-💸 Expense Reimbursement Management System (MERN Stack)
+💼 Expense Reimbursement System
 
-A comprehensive expense reimbursement platform that simplifies the process of expense submission, approval, and management for organizations.
-Built with a modern MERN + TypeScript stack, it provides a seamless experience for employees, managers, and admins.
+A simple platform to manage employee expenses, approvals, and reimbursements — faster, error-free, and transparent.
 
-🚀 Problem Statement
+🔍 What’s the Problem?
 
-Managing expense reimbursements is often time-consuming, error-prone, and lacks transparency.
-Employees struggle with submissions, managers face approval bottlenecks, and finance teams deal with compliance overhead.
+Many companies still use manual processes for expense approvals. These are:
 
-✅ Our Solution
+- Slow and time-consuming  
+- Prone to human errors  
+- Not transparent  
 
-The Expense Reimbursement Management System automates the entire workflow:
+This system helps by automating expense submissions and approvals with smart rules.
 
-Employees can submit expenses (with receipt uploads & OCR support).
+🚀 What Can It Do?
 
-Managers review & approve reimbursements with hierarchical workflows.
+👥 User & Company Setup
 
-Companies gain real-time visibility into spending with analytics and reporting.
+- When someone signs up, a new **Company** and **Admin User** are auto-created.
+- The company’s currency is set based on the selected country.
+- Admin can:
+  - Add employees and managers
+  - Assign roles (Employee, Manager)
+  - Link employees to their managers
 
-🔑 Features
-👥 User & Company Management
+🧾 Expense Submission (Employee)
 
-🔐 Authentication & Role-Based Access: Admin, Manager, and Employee roles.
+Employees can:
 
-🏢 Company Auto-Creation: New companies created during signup with base currency.
+- Submit expenses (with date, amount, description, etc.)
+- Upload receipts (auto-filled using OCR)
+- Check their past expenses and approval status
 
-📊 Manager Relationships: Define reporting hierarchies for multi-level approvals.
+✅ Approval Flow (Manager/Admin)
 
-💵 Expense Management
+- Multi-step approvals: Manager → Finance → Director, etc.
+- Admin sets the approval sequence
+- Each approver can:
+  - View pending requests
+  - Approve or reject with comments
 
-🧾 Submit Expenses with receipts (OCR-enabled for auto-data extraction).
+⚙️ Smart Approval Rules
 
-🔄 Approval Workflows: Multi-level, rule-based approvals.
+Approval logic can include:
 
-💱 Multi-Currency Support with automatic base-currency conversion.
+- ✅ **Percentage Rule** – e.g., if 60% approve, it's accepted
+- 👤 **Specific Approver Rule** – e.g., if CFO approves, it's auto-approved
+- 🧠 **Hybrid Rule** – e.g., 60% OR CFO approval
 
-📂 Expense Tracking: View status (Pending, Approved, Reimbursed).
+Supports mixing these rules with multiple approvers.
 
-📊 Analytics & Reporting
 
-📈 Dashboard with expense summaries per employee, department, or company.
+📸 Receipt OCR (Auto-Read)
 
-🗓️ Time-based filtering & reports (weekly, monthly, yearly).
+- Upload a photo of the receipt  
+- System auto-fills:
+  - Amount
+  - Date
+  - Vendor name (e.g., restaurant)
+  - Description
+  - Expense type
 
-🔍 Search & filter by category, employee, or status.
 
-🔒 Security
 
-✅ JWT Authentication & bcrypt password hashing.
+🔐 User Roles
 
-✅ Helmet, rate limiting, and secure CORS policies.
+| Role     | What They Can Do                               |
+|----------|------------------------------------------------|
+| Admin    | Add users, assign roles, set rules, view all expenses |
+| Manager  | Approve/reject team expenses                   |
+| Employee | Submit expenses, view their own submissions    |
 
-✅ Role-based authorization for endpoints.
 
-🖥️ Tech Stack
+🌍 APIs Used
 
-Frontend
+- 🌐 **Country & Currency**  
+  [https://restcountries.com/v3.1/all?fields=name,currencies](https://restcountries.com/v3.1/all?fields=name,currencies)
 
-⚡ Vite
- + React
- + TypeScript
+- 💱 **Currency Conversion**  
+  [https://api.exchangerate-api.com/v4/latest/{BASE_CURRENCY}](https://api.exchangerate-api.com/v4/latest/{BASE_CURRENCY})
 
-🎨 Tailwind CSS
- + shadcn/ui
+🖼️ UI Mockup
 
-Backend
+View the interface design here:  
+🔗 [Excalidraw Mockup](https://link.excalidraw.com/l/65VNwvy7c4X/4WSLZDTrhkA)
 
-🟢 Node.js
- + Express
 
-📦 REST API with modular controllers & services
+🗂️ Project Structure 
 
-🔒 JWT authentication, role-based middleware
+/frontend → Web interface
+/backend → Server & APIs
+/ocr-service → OCR for receipts
+/docs → API & system docs
+README.md → This file
 
-Database
 
-🍃 MongoDB
- + Mongoose
-
-Other
-
-☁️ File Uploads (ready for cloud storage e.g. AWS S3)
-
-🖼️ OCR Integration for receipt scanning
-
-📊 Seed scripts for currencies & initial setup
-
-📸 Screenshots (Add Images Here)
-
-Replace with actual screenshots/GIFs of your app for maximum impact.
-
-🏠 Dashboard Overview
-
-💵 Submit Expense Form
-
-✅ Approval Workflow Screen
-
-📊 Reports & Analytics
-
-⚙️ Getting Started
-🔹 Prerequisites
-
-Node.js (use nvm to manage versions)
-
-npm or yarn
-
-MongoDB (local or cloud, e.g. Atlas)
-
-🔹 Installation
-# Clone the repository
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
-
-# Install dependencies
-npm install
-
-# Setup environment variables
-cp .env.example .env   # update values inside
-
-# Run development server
-npm run dev
-
-🌐 Deployment
-With Lovable
-
-Open your Lovable project.
-
-Go to Share → Publish.
-
-Your app is instantly live.
-
-Custom Domain
-
-Go to Project > Settings > Domains
-
-Click Connect Domain and follow instructions.
-
-📌 Roadmap
-
-📲 Mobile-friendly PWA version
-
-🔔 Email & push notifications for approvals
-
-📑 PDF export of reports & receipts
-
-💳 Integration with accounting/payroll systems
-
-🤝 Contributing
-
-Contributions are welcome!
-
-Fork the repo
-
-Create a new branch (feature/my-feature)
-
-Submit a pull request
-
-📜 License
-
-MIT License © 2025 Expense Reimbursement Management System
+Team Members :
+Ekta Dodiya 
+Meghansh Thakker
+Hasti Kalariya
+Jainam Patel
