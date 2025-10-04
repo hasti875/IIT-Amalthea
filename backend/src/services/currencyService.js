@@ -77,6 +77,7 @@ const convertCurrency = async (amount, fromCurrency, toCurrency, options = {}) =
     const convertedAmount = amount * rateResult.exchangeRate;
 
     return {
+      value: convertedAmount,
       exchangeRate: rateResult.exchangeRate,
       convertedAt: new Date(),
       source: rateResult.source,

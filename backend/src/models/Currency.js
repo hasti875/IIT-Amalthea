@@ -57,7 +57,7 @@ const exchangeRateSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['api', 'manual'],
+    enum: ['api', 'manual', 'exchangerate-api', 'fixer', 'currencylayer', 'same-currency', 'fallback'],
     default: 'api'
   }
 }, {
